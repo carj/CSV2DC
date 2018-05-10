@@ -18,5 +18,13 @@ for example:
 
 Columns which do not have this form are ignored.
 
+eg.
+
+filename | dc:description | dc:identifier | dc:title | dc:subject
+-------- | -------------  | ------------- | -------- | -----------
+LC-USZ62-20901.tiff | Picture of a plane | LC-USZ62-20901 | Photo Title | Plane
+LC-USZ62-43601.tiff | Picture of a Car | LC-USZ62-43601 | Photo Title2 | Car
+
+
 The XML output files are written to the `output` folder specified by the `-o` argument. The XML file name is based on a column header given by the `-c` argument.
 
