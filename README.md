@@ -3,7 +3,7 @@ Convert a spreadsheet (CSV) file into Dublin Core XML files
 
 Usage:
 
-`.\csv2dc.cmd -i .\file.csv -o output -c "filename"`
+`.\csv2dc.cmd -i .\file.csv -o output [-c "filename"]`
 
 The input CSV file should have header column names which start with dc: or dcterms:
 attributes are allowed.
