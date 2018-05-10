@@ -30,11 +30,12 @@ The XML output files are written to the `output` folder specified by the `-o` ar
 
 The output would be
 
-`<?xml version="1.0" encoding="UTF-8"?>
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
 <dc:dc xmlns:dc="http://purl.org/dc/elements/1.1/"    xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<dc:description>a</dc:description>
+	<dc:description>Picture of a plane</dc:description>
 	<dc:identifier>LC-USZ62-20901</dc:identifier>
 	<dc:title>Photo Title</dc:title>
 	<dc:subject>Plane</dc:subject>
 </dc:dc>
-`
+```
