@@ -28,3 +28,13 @@ LC-USZ62-43601.tiff | Picture of a Car | LC-USZ62-43601 | Photo Title2 | Car | L
 
 The XML output files are written to the `output` folder specified by the `-o` argument. The XML file name is based on a column header given by the `-c` argument.
 
+The output would be
+
+`<?xml version="1.0" encoding="UTF-8"?>
+<dc:dc xmlns:dc="http://purl.org/dc/elements/1.1/"    xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<dc:description>a</dc:description>
+	<dc:identifier>LC-USZ62-20901</dc:identifier>
+	<dc:title>Photo Title</dc:title>
+	<dc:subject>Plane</dc:subject>
+</dc:dc>
+`
