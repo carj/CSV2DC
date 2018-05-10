@@ -10,8 +10,8 @@ attributes are allowed.
 
 for example:
 
--dc:title
--dc:description
--dcterms:provenance
--dc:description
--dc:source xsi:type="dcterms:URI"
+- dc:title
+- dc:description
+- dcterms:provenance
+- dc:description
+- dc:source xsi:type="dcterms:URI"
