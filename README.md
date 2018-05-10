@@ -37,5 +37,6 @@ The output would be
 	<dc:identifier>LC-USZ62-20901</dc:identifier>
 	<dc:title>Photo Title</dc:title>
 	<dc:subject>Plane</dc:subject>
+	<dcterms:provenance>LOC</dcterms:provenance>
 </dc:dc>
 ```
