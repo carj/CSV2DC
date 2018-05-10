@@ -49,7 +49,7 @@ The output would be
 
 You can configure the root element and its namespace through the `-r -p -n` options
 
-`csv2dc.cmd -i metadata.csv -o output -c filename -r metadata -p ns -n http://my.namespace.com`
+`csv2dc.cmd -i file.csv -o output -c filename -r metadata -p ns -n http://my.namespace.com`
 
 produces
 
@@ -60,6 +60,7 @@ produces
 	<dc:identifier>LC-USZ62-20901</dc:identifier>
 	<dc:title>Photo Title</dc:title>
 	<dc:subject>Plane</dc:subject>
+	<dcterms:provenance>LOC</dcterms:provenance>
 </ns:metadata>
 ```
 
