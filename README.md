@@ -3,7 +3,7 @@ Convert a spreadsheet (CSV) file into Dublin Core XML files
 
 Usage:
 
-`.\csv2dc.cmd -i .\file.csv -o output [-c "filename"]`
+`csv2dc.cmd -i file.csv -o output [-c filename] [-r root] [-p prefix] [-n namespace]`
 
 The input CSV file should have header column names which start with dc: or dcterms:
 
@@ -42,3 +42,8 @@ The output would be
 	<dcterms:provenance>LOC</dcterms:provenance>
 </dc:dc>
 ```
+
+You can configure the root element and its namespace through the `-r -p -n` options
+
+
+
