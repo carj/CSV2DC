@@ -1,2 +1,2 @@
 # CSV2DC
-Convert spreadsheet (CSV) files into Dublin Core XML
+Convert a spreadsheet (CSV) file into Dublin Core XML files
