@@ -1,5 +1,6 @@
 # CSV2DC
 Convert a spreadsheet (CSV) file into Dublin Core XML files
+The XML files conform to the Preservica naming convention linking them to digital files which they describe.
 
 Usage:
 
