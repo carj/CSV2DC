@@ -1,3 +1,3 @@
 theme: jekyll-theme-cayman
-title: CSV2DC
-description: Convert spreadsheet (CSV) files into Dublin Core XML
+title: csv2dc
+description: Convert spreadsheet (CSV) files into Dublin Core XML for ingest into Preservica
