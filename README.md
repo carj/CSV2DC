@@ -15,7 +15,7 @@ for example:
 
 - dc:title
 - dc:description
-- dc:description
+- dc:subject
 - dcterms:provenance
 - dc:source xsi:type="dcterms:URI"
 
