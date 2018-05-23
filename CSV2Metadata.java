@@ -188,7 +188,7 @@ public class CSV2Metadata {
         for (CSVRecord record : parser) {
 
             String filename = record.get(filenameColumn);
-            File xmlFile = new File(folder, String.format("%s.wav.metadata", filename));
+            File xmlFile = new File(folder, String.format("%s.metadata", filename));
 
             FileOutputStream fos = new FileOutputStream(xmlFile);
             Writer osw = new BufferedWriter(new OutputStreamWriter(fos, "UTF-8"));
