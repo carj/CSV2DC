@@ -213,7 +213,7 @@ public class CSV2Metadata {
                     String value = record.get(element);
                     String closingElement = getClosingElement(element);
                     if (value == null || value.isEmpty()) {
-                        osw.write(String.format("\t<%s></%s>", element, closingElement));
+                        osw.write(String.format("\t<%s />", element, closingElement));
                     } else {
                         osw.write(String.format("\t<%s>%s</%s>", element, value, closingElement));
                     }
