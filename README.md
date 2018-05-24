@@ -35,7 +35,7 @@ examples:
 
 `csv2dc.cmd -i file.csv -o output -c filename`
 
-The output would be
+The output would be a file called LC-USZ62-20901.tiff.metadata
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
