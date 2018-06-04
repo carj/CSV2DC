@@ -4,7 +4,7 @@ The XML files conform to the [Preservica](http://preservica.com/) naming convent
 
 Usage:
 
-`csv2dc.cmd -i file.csv -o output [-c "file name column"] [-r root] [-p prefix] [-n namespace]`
+`csv2dc.cmd -i file.csv -o output -c "file name column" [-r root] [-p prefix] [-n namespace]`
 
 The input CSV file should have header column names which start with dc: or dcterms:
 
