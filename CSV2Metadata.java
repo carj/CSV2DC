@@ -33,12 +33,10 @@ import java.util.Set;
  *
  */
 public class CSV2Metadata {
-
-
     /**
      *  The java Main entry point for executing the class
      *
-     * @param args
+     * @param args  command line arguments
      */
     public static void main(String[] args) {
 
@@ -145,10 +143,10 @@ public class CSV2Metadata {
     /**
      *  remove any attributes from the closing element
      *
-     * @param element
-     * @return String
+     * @param element The opening tag element
+     * @return String The closing tag element
      */
-    public String getClosingElement(String element) {
+    private String getClosingElement(String element) {
 
         if (element.contains(" ")) {
             String[] elements = element.split(" ");
@@ -162,11 +160,11 @@ public class CSV2Metadata {
     /**
      *  Loop over the csv file and create xml elements for each dublin core column.
      *
-     * @param csvDocument
-     * @param folder
+     * @param csvDocument The CSV file
+     * @param folder      The output folder
      * @throws Exception
      */
-    public int parse(File csvDocument, File folder, String filenameColumn, String rootElement, String rootPrefix, String rootNamespace) throws Exception {
+    private int parse(File csvDocument, File folder, String filenameColumn, String rootElement, String rootPrefix, String rootNamespace) throws Exception {
 
         final String DC_NS = "xmlns:dc=\"http://purl.org/dc/elements/1.1/\"";
         final String DCTERMS_NS = "xmlns:dcterms=\"http://purl.org/dc/terms/\"";
@@ -178,7 +176,7 @@ public class CSV2Metadata {
 
         boolean containsFileName = headerMap.containsKey(filenameColumn);
         if (!containsFileName) {
-            System.out.println(String.format("The CSV file does not contain column with the name %s", filenameColumn));
+            System.out.println(String.format("The CSV file does not contain a column with the name %s", filenameColumn));
             System.exit(1);
         }
 
@@ -200,7 +198,6 @@ public class CSV2Metadata {
                 root = String.format("%s %s", root, DC_NS);
             }
 
-
             osw.write("<");
             osw.write(root);
             osw.write(">");
@@ -209,7 +206,7 @@ public class CSV2Metadata {
             for (String element : headers) {
                 boolean isDublinCore = (element.startsWith("dc:") || element.startsWith("dcterms:"));
                 if (isDublinCore) {
-                    String value = record.get(element);
+                    String value = record.get(element).trim();
                     String closingElement = getClosingElement(element);
                     if (value == null || value.isEmpty()) {
                         osw.write(String.format("\t<%s />", element));
@@ -230,6 +227,4 @@ public class CSV2Metadata {
 
         return numFiles;
     }
-
-
 }
