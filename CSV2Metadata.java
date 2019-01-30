@@ -22,6 +22,8 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.*;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -137,7 +139,6 @@ public class CSV2Metadata {
             System.out.println(exp.getMessage());
             formatter.printHelp( cmdLine, options  );
         }
-
     }
 
     /**
@@ -171,10 +172,25 @@ public class CSV2Metadata {
         final String XSI_NS = "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
 
         Reader in = new FileReader(csvDocument);
-        CSVParser parser = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
-        Map<String, Integer> headerMap = parser.getHeaderMap();
 
-        boolean containsFileName = headerMap.containsKey(filenameColumn);
+        CSVParser parser = CSVFormat.RFC4180.parse(in);
+        Iterator<CSVRecord> recordItor =  parser.iterator();
+        CSVRecord headerRecord = recordItor.next();
+
+        int headerCount = headerRecord.size();
+
+        String[] headers = new String[headerCount];
+
+        int fileNameColumnId = -1;
+        boolean containsFileName = false;
+        for (int i = 0; i < headerCount; i++) {
+            headers[i] = headerRecord.get(i);
+            if (headers[i].contains(filenameColumn)) {
+                fileNameColumnId = i;
+                containsFileName = true;
+            }
+        }
+
         if (!containsFileName) {
             System.out.println(String.format("The CSV file does not contain a column with the name %s", filenameColumn));
             System.exit(1);
@@ -182,9 +198,10 @@ public class CSV2Metadata {
 
         int numFiles = 0;
 
-        for (CSVRecord record : parser) {
+        while (recordItor.hasNext()) {
 
-            String filename = record.get(filenameColumn);
+            CSVRecord record = recordItor.next();
+            String filename = record.get(fileNameColumnId);
             File xmlFile = new File(folder, String.format("%s.metadata", filename));
 
             FileOutputStream fos = new FileOutputStream(xmlFile);
@@ -197,26 +214,25 @@ public class CSV2Metadata {
             if (!root.contains(DC_NS)) {
                 root = String.format("%s %s", root, DC_NS);
             }
-
             osw.write("<");
             osw.write(root);
             osw.write(">");
             osw.write(System.getProperty("line.separator"));
-            Set<String> headers = headerMap.keySet();
-            for (String element : headers) {
-                boolean isDublinCore = (element.startsWith("dc:") || element.startsWith("dcterms:"));
+
+            for (int i = 0; i < headerCount; i++) {
+                String header = headers[i];
+                boolean isDublinCore = (header.startsWith("dc:") || header.startsWith("dcterms:"));
                 if (isDublinCore) {
-                    String value = record.get(element).trim();
-                    String closingElement = getClosingElement(element);
+                    String value = record.get(i).trim();
+                    String closingElement = getClosingElement(header);
                     if (value == null || value.isEmpty()) {
-                        osw.write(String.format("\t<%s />", element));
+                        osw.write(String.format("\t<%s />", header));
                     } else {
-                        osw.write(String.format("\t<%s>%s</%s>", element, value, closingElement));
+                        osw.write(String.format("\t<%s>%s</%s>", header, value, closingElement));
                     }
                     osw.write(System.getProperty("line.separator"));
                 }
             }
-
             osw.write(String.format("</%s:%s>", rootPrefix, rootElement));
             osw.flush();
             osw.close();
