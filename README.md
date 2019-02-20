@@ -64,4 +64,18 @@ produces
 	<dcterms:provenance>LOC</dcterms:provenance>
 </ns:metadata>
 ```
+To re-create the dublin core schema used by [OAI-PMH](https://www.openarchives.org/OAI/openarchivesprotocol.html)
+
+```xml
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" 
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"   xmlns:dc="http://purl.org/dc/elements/1.1/"  >
+	...
+	....
+	</oai_dc:dc>
+```
+
+Then use the following command line arguments:
+
+`csv2dc.cmd -i file.csv -o output -c filename -r dc -p oai_dc -n http://www.openarchives.org/OAI/2.0/oai_dc/`
+
 
