@@ -92,11 +92,24 @@ the metadata will be attached to.
 Use this program if you the digital files have already been ingested into Preservica and you now want to 
 add additional descriptive metadata held in a spreadsheet.
 
+For v5.x Preservica systems:
+
 The additional column in the spreadsheet must be called "fileref" and contain the UUID of the Preservica digital file.
 
 eg.
 
 filename            | fileref  |  dc:description | dc:identifier | dc:title | dc:subject | dcterms:provenance 
+--------            | -------- | -------------  | ------------- | -------- | ----------- | -----------
+LC-USZ62-20901.tiff | 8283edc6-8016-4100-a94c-3db90b0e4a75         | Picture of a plane | LC-USZ62-20901 | Photo Title | Plane | LOC
+LC-USZ62-43601.tiff | 9183edc6-2115-2912-b8ad-5ef3013c7b21         | Picture of a Car | LC-USZ62-43601 | Photo Title2 | Car | LOC
+
+For v6.x Preservica systems:
+
+The additional column in the spreadsheet must be called "assetId" and contain the UUID of the Preservica digital asset.
+
+eg.
+
+filename            | assetId  |  dc:description | dc:identifier | dc:title | dc:subject | dcterms:provenance 
 --------            | -------- | -------------  | ------------- | -------- | ----------- | -----------
 LC-USZ62-20901.tiff | 8283edc6-8016-4100-a94c-3db90b0e4a75         | Picture of a plane | LC-USZ62-20901 | Photo Title | Plane | LOC
 LC-USZ62-43601.tiff | 9183edc6-2115-2912-b8ad-5ef3013c7b21         | Picture of a Car | LC-USZ62-43601 | Photo Title2 | Car | LOC

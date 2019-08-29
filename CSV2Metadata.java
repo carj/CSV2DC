@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.StringEntity;
@@ -64,6 +65,7 @@ public class CSV2Metadata {
     private TransformerFactory transformerFactory = TransformerFactory.newInstance();
 
     private static final String XIP_NS = "http://www.tessella.com/XIP/v4";
+    private static final String XIPV6_NS = "http://preservica.com/EntityAPI/v6.0";
 
     private Properties userDetails;
 
@@ -271,7 +273,8 @@ public class CSV2Metadata {
             osw.write(">");
             osw.write(System.getProperty("line.separator"));
 
-            String  filerefId = null;
+            String filerefId = null;
+            String assetId = null;
 
             for (int i = 0; i < headerCount; i++) {
                 String header = headers[i];
@@ -289,6 +292,9 @@ public class CSV2Metadata {
                 if (header.toLowerCase().trim().startsWith("fileref")) {
                     filerefId = record.get(i).trim();
                 }
+                if (header.toLowerCase().trim().startsWith("assetid")) {
+                    assetId = record.get(i).trim();
+                }
             }
             osw.write(String.format("</%s:%s>", rootPrefix, rootElement));
             osw.flush();
@@ -300,14 +306,14 @@ public class CSV2Metadata {
             // if the entity does not have descriptive metadata with the required
             // namespace then add it.
 
-            if (filerefId != null && (filerefId.length() > 0) ) {
+            if (filerefId != null && (filerefId.length() > 0)) {
                 if ((userDetails != null) && (!userDetails.isEmpty())) {
-                    Document xipDocument = getEntity(filerefId);
+                    Document xipDocument = getEntityV5(filerefId);
                     if (xipDocument != null) {
-                        if (!hasDublinCore(xipDocument, rootNamespace)) {
+                        if (!hasDublinCoreV5(xipDocument, rootNamespace)) {
                             org.w3c.dom.Document dublinCoreDocument = getDocumentFromFile(xmlFile);
-                            xipDocument = addDublinCore(dublinCoreDocument, xipDocument, rootNamespace);
-                            updateEntity(xipDocument, filerefId);
+                            xipDocument = addDublinCoreV5(dublinCoreDocument, xipDocument, rootNamespace);
+                            updateEntityV5(xipDocument, filerefId);
                         } else {
                             System.out.println("Entity: " + filerefId + " already has Dublin Core metadata. Ignoring....");
                         }
@@ -317,6 +323,22 @@ public class CSV2Metadata {
                 } else {
                     System.out.println("Create a preservica.properties file with username and password");
                     System.out.println("to update entries");
+                }
+            }
+
+            if (assetId != null && (assetId.length() > 0)) {
+                if ((userDetails != null) && (!userDetails.isEmpty())) {
+                    Document xipDocument = getEntityV6(assetId);
+                    if (xipDocument != null) {
+                        if (!hasDublinCoreV6(xipDocument, rootNamespace)) {
+                            org.w3c.dom.Document dublinCoreDocument = getDocumentFromFile(xmlFile);
+                            updateEntityV6(dublinCoreDocument, assetId);
+                        } else {
+                            System.out.println("Asset: " + assetId + " already has Dublin Core metadata. Ignoring....");
+                        }
+                    } else {
+                        System.out.println("Failed to find a Preservica asset with ID: " + assetId);
+                    }
                 }
             }
         }
@@ -331,7 +353,55 @@ public class CSV2Metadata {
      * @param document
      * @param entityRef
      */
-    private void updateEntity(Document document, String entityRef) {
+    private void updateEntityV6(Document document, String entityRef) {
+        CloseableHttpClient client = getClient();
+        CloseableHttpResponse response = null;
+        try {
+
+            String domain = userDetails.getProperty("preservica.domain");
+
+            HttpPost postRequest = new HttpPost(String.format("https://%s/api/entity/information-objects/%s/metadata", domain, entityRef.trim()));
+            postRequest.setHeader("Authorization", getHeader());
+            postRequest.setHeader("Content-Type", "application/xml");
+
+            document.normalize();
+
+            DOMSource domSource = new DOMSource(document);
+            StringWriter writer = new StringWriter();
+            StreamResult result = new StreamResult(writer);
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.transform(domSource, result);
+
+            StringEntity se = new StringEntity(writer.toString(), "UTF-8");
+            postRequest.setEntity(se);
+            response = client.execute(postRequest);
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                log.info("Updated object: " + entityRef);
+            }
+            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+                log.error("Failed to update entity");
+                log.error(response.getStatusLine().toString());
+            }
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            throw new RuntimeException(ex);
+        } finally {
+            EntityUtils.consumeQuietly(response.getEntity());
+            IOUtils.closeQuietly(response);
+        }
+        return;
+    }
+
+
+
+    /**
+     *  Update the Preservica File entity with the dublin core metadata
+     *
+     *
+     * @param document
+     * @param entityRef
+     */
+    private void updateEntityV5(Document document, String entityRef) {
         CloseableHttpClient client = getClient();
         CloseableHttpResponse response = null;
         try {
@@ -369,6 +439,8 @@ public class CSV2Metadata {
         return;
     }
 
+
+
     /**
      * Add dublin core metadata to an existing file entity
      *
@@ -376,7 +448,7 @@ public class CSV2Metadata {
      * @param  xipDocument
      * @return Document
      */
-    private Document addDublinCore(Document dublinCore, Document xipDocument, String namespace) {
+    private Document addDublinCoreV5(Document dublinCore, Document xipDocument, String namespace) {
 
         // Create a new Metadata element
         Element metadataElement = xipDocument.createElement("Metadata");
@@ -414,6 +486,27 @@ public class CSV2Metadata {
         return document;
     }
 
+    private boolean hasDublinCoreV6(Document document, String namespace) {
+
+        NodeList metadataList = document.getElementsByTagNameNS(XIPV6_NS, "Metadata");
+        for (int i = 0; i < metadataList.getLength(); i++) {
+            Node metadataNode = metadataList.item(i);
+            NodeList fragmentList = metadataNode.getChildNodes();
+            for (int j = 0; j < fragmentList.getLength(); j++) {
+                Node fragmentNode = fragmentList.item(j);
+                NamedNodeMap namedNodeMap =  fragmentNode.getAttributes();
+                if (namedNodeMap != null) {
+                    Node attribute = namedNodeMap.getNamedItem("schema");
+                    if (attribute != null) {
+                        if (attribute.getNodeValue().equals(namespace)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     /**
      * Check that the current document does not have generic metadata already
@@ -424,7 +517,7 @@ public class CSV2Metadata {
      * @param namespace
      * @return true
      */
-    private boolean hasDublinCore(Document document, String namespace) {
+    private boolean hasDublinCoreV5(Document document, String namespace) {
 
         NodeList list = document.getElementsByTagNameNS(XIP_NS, "Metadata");
         for (int i = 0; i < list.getLength(); i++) {
@@ -447,13 +540,47 @@ public class CSV2Metadata {
         return String.format("Basic %s",  new String(bytes, Charset.forName("UTF-8")));
     }
 
+
     /**
-     *  Get a Preservica entity by its reference
+     *  Get a Preservica v6 asset by its asset ref
+     *
+     * @param assetRef
+     * @return org.w3c.dom Document of XIP XML
+     */
+    private Document getEntityV6(String assetRef) {
+
+        String domain = userDetails.getProperty("preservica.domain");
+
+        CloseableHttpClient client = getClient();
+        CloseableHttpResponse response = null;
+        try {
+            HttpGet httpGet = new HttpGet(String.format("https://%s/api/entity/information-objects/%s", domain, assetRef.trim()));
+            httpGet.setHeader("Authorization", getHeader());
+            response = client.execute(httpGet);
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                return getDocument(response);
+            }
+            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+                log.error("Failed to create get entity");
+                log.error(response.getStatusLine().toString());
+            }
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            throw new RuntimeException(ex);
+        } finally {
+            EntityUtils.consumeQuietly(response.getEntity());
+            IOUtils.closeQuietly(response);
+        }
+        return null;
+    }
+
+    /**
+     *  Get a Preservica v5 entity by its reference
      *
      * @param entityRef
      * @return org.w3c.dom Document of XIP XML
      */
-    private Document getEntity(String entityRef) {
+    private Document getEntityV5(String entityRef) {
 
         String domain = userDetails.getProperty("preservica.domain");
 
