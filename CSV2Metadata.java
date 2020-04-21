@@ -20,6 +20,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
@@ -40,6 +41,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Iterator;
@@ -225,9 +227,14 @@ public class CSV2Metadata {
         final String DCTERMS_NS = "xmlns:dcterms=\"http://purl.org/dc/terms/\"";
         final String XSI_NS = "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
 
-        Reader in = new FileReader(csvDocument);
+        //Reader in = new FileReader(csvDocument);
 
-        CSVParser parser = CSVFormat.RFC4180.parse(in);
+        final URL url = csvDocument.toURL();
+
+        final Reader reader = new InputStreamReader(new BOMInputStream(url.openStream()), "UTF-8");
+        final CSVParser parser = new CSVParser(reader, CSVFormat.EXCEL);
+
+        //CSVParser parser = CSVFormat.RFC4180.parse(in);
         Iterator<CSVRecord> recordItor =  parser.iterator();
         CSVRecord headerRecord = recordItor.next();
 
