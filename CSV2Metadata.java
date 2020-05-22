@@ -271,9 +271,15 @@ public class CSV2Metadata {
             osw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             osw.write(System.getProperty("line.separator"));
 
-            String root = String.format("%s:%s xmlns:%s=\"%s\" %s %s", rootPrefix, rootElement, rootPrefix, rootNamespace, DCTERMS_NS, XSI_NS);
+            String root = String.format("%s:%s xmlns:%s=\"%s\"", rootPrefix, rootElement, rootPrefix, rootNamespace);
             if (!root.contains(DC_NS)) {
                 root = String.format("%s %s", root, DC_NS);
+            }
+            if (!root.contains(DCTERMS_NS)) {
+                root = String.format("%s %s", root, DCTERMS_NS);
+            }
+            if (!root.contains(XSI_NS)) {
+                root = String.format("%s %s", root, XSI_NS);
             }
             osw.write("<");
             osw.write(root);
