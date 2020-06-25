@@ -91,13 +91,14 @@ public class CSV2Metadata {
         options.addOption( "o", "output", true, "the folder which will contain the xml documents" );
         options.addOption( "r", "root", true, "the root element of the dublin core xml, defaults to dc" );
         options.addOption( "n", "namespace", true, "the root element namespace, defaults to http://purl.org/dc/elements/1.1/" );
+        options.addOption( "hp", "header-prefix", true, "the column header prefix in addition to dc & dcterms" );
         options.addOption( "p", "prefix", true, "the root element namespace prefix, defaults to dc" );
         options.addOption( "u", "user", true, "the property file with Preservica username & password" );
         options.addOption( "h", "help", false, "print this message" );
 
         HelpFormatter formatter = new HelpFormatter();
 
-        final String cmdLine = "csv2dc.cmd -i file.csv -o output [-c \"file name column\"] [-r root] [-p prefix] [-n namespace]";
+        final String cmdLine = "csv2dc.cmd -i file.csv -o output [-c \"file name column\"] [-r root] [-p prefix] [-n namespace]  [-hp header-prefix]";
 
         String DEFAULT_FILE_COLUMN = "filename";
         String DEFAULT_ROOT_ELEMENT = "dc";
@@ -106,6 +107,7 @@ public class CSV2Metadata {
         String fileColumn;
         String rootElement;
         String rootPrefix;
+        String headerPrefix = null;
         String rootNamespace;
         File inputFile = null;
         File outputDir = null;
@@ -130,6 +132,11 @@ public class CSV2Metadata {
             if ( line.hasOption( "u" ) ) {
                 String properties = line.getOptionValue( "u" );
                 userDetails.load(new FileInputStream(properties));
+            }
+
+
+            if ( line.hasOption( "hp" ) ) {
+                headerPrefix  = line.getOptionValue( "hp" );
             }
 
             if ( line.hasOption( "p" ) ) {
@@ -179,7 +186,7 @@ public class CSV2Metadata {
 
             try {
                 CSV2Metadata metadata = new CSV2Metadata(userDetails);
-                int files = metadata.parse(inputFile, outputDir, fileColumn, rootElement, rootPrefix, rootNamespace);
+                int files = metadata.parse(inputFile, outputDir, fileColumn, rootElement, rootPrefix, rootNamespace, headerPrefix);
                 System.out.println(String.format("Created %d XML files in %s", files, outputDir.getName()));
             } catch (Exception e) {
                 formatter.printHelp( cmdLine, options  );
@@ -221,7 +228,7 @@ public class CSV2Metadata {
      * @param folder      The output folder
      * @throws Exception
      */
-    private int parse(File csvDocument, File folder, String filenameColumn, String rootElement, String rootPrefix, String rootNamespace) throws Exception {
+    private int parse(File csvDocument, File folder, String filenameColumn, String rootElement, String rootPrefix, String rootNamespace, String headerPrefix) throws Exception {
 
         final String DC_NS = "xmlns:dc=\"http://purl.org/dc/elements/1.1/\"";
         final String DCTERMS_NS = "xmlns:dcterms=\"http://purl.org/dc/terms/\"";
@@ -291,8 +298,12 @@ public class CSV2Metadata {
 
             for (int i = 0; i < headerCount; i++) {
                 String header = headers[i];
+                boolean isAddtional = false;
                 boolean isDublinCore = (header.startsWith("dc:") || header.startsWith("dcterms:"));
-                if (isDublinCore) {
+                if (headerPrefix != null) {
+                    isAddtional = header.startsWith(headerPrefix + ":");
+                }
+                if (isDublinCore || isAddtional) {
                     String value = record.get(i).trim();
                     String closingElement = getClosingElement(header);
                     if (value == null || value.isEmpty()) {
